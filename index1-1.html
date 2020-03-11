@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>打ち上げ花火</title>
+<style>
+canvas{
+ background-color: #000000;
+}
+</style>
+<script>
+//花火をクラス化 => 4色を一気に放射
+
+//1:花火の色を付ける
+//2:花火の場所をランダムにする
+//3:画面に表示する花火は10個までにする(allFireworksの要素数を縛る？11個めからはまた要素0へ格納していく)
+
+class Fireworks {
+    constructor(myContext) {
+        this.x = new Array(); // 花火パーティクルのｘ座標
+        this.y = new Array(); // 花火パーティクルのｙ座標
+        this.vx = new Array(); // 花火パーティクルのｘ方向の速度
+        this.vy = new Array(); // 花火パーティクルのｘ方向の速度
+        this.cx = 120; // 花火中心点のｘ座標
+        this.cy = 150;  // 花火中心点のｙ座標
+
+        //火花の色
+        this.sparkColor = new Array();
+        //色リスト
+        this.sparkColorList = this.setSparkColor();
+
+        //Canvas
+        this.myContext = myContext;
+
+        //二発目を打つ用
+        //this.time = 0;
+        this.setSpark();
+    }
+
+    setSpark() {
+        for(let i = 0; i < 512; i++ ){
+            //0~4のランダムな値を作る
+            let speed = 4 * Math.random();
+            
+            //(円周2πr)
+            //適当なラジアン値(弧度法で測る角度の大きさ)を作る(0 ~ 2π(≒6.28))
+            let theta = Math.random() * 2 * Math.PI;
+
+            //4つの配列の全てに512個の要素を持たせる
+            this.x[i] = this.cx;
+            this.y[i] = this.cy;
+
+            //Math.cos(rad) 引数のラジアン値をもとにθを求め、cosθを求める？
+            //-4 ~ 4 をvx, vyに格納
+            this.vx[i] = speed * Math.cos( theta );
+            this.vy[i] = speed * Math.sin( theta );
+
+            this.sparkColor[i] = Math.floor(Math.random() * 4);
+
+            //個人的メモ
+            //sinθ...左下の正角(θ)に対する弦の長さ(直角三角形の高さ、たかサイン)
+            //cosθ...右上の余角(90-θ)に対する弦の長さ(直角三角形の底辺、よコサイン)
+            //--sin,cos,tanも直角三角形の斜辺を1とした時の値を返す？--
+            //ラジアン値の求め方 ... 弧の長さ/半径 (sinθ、cosθの求め方に似てる？)
+        }
+        console.log(this.x[8]);
+        console.log("sparkColor[200]:%d",this.sparkColor[200]);
+        console.log("color01:%s", this.sparkColorList[0]);
+        //this.setSparkColor();
+        this.drawOneFrameFireworks();
+    }
+
+    setSparkColor() {
+        let colorList = new Array();
+        console.log(colorList);
+        console.log(Math.floor(Math.random() * 195 + 60).toString(16));
+        //色の作成
+        for(let i=0;i<4;i++){
+            colorList[i] = "#";
+            for(let j=0;j<3;j++) {
+                colorList[i] += Math.floor(Math.random() * 195 + 60).toString(16)
+            }
+            console.log("list%d:%s",i,colorList[i]);
+        }
+        console.log(colorList[0]);
+        let charEx = "#" + (65).toString(16) + (105).toString(16) + (225).toString(16);
+        console.log(charEx);
+        return colorList;
+    }
+
+    drawOneFrameFireworks() {
+
+        //長いので省略
+        let sCL = this.sparkColorList;
+
+        this.myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
+        this.myContext.fillRect( 0, 0, 1024, 768 );
+
+        //起点の座標と乱数を足す
+        for(let i = 0; i < 512; i++ ){
+
+            // . ーーー → (X)
+            // |
+            // |
+            // |
+            // ↓
+            //(Y)
+
+            //足し算で正の方向(画面の下側に)に進んでいく
+            //これがないと下がらずいろんな方向に飛んでいく
+            this.vy[i] += 0.05;
+
+            //moveTo()で使う始点を格納
+            this.x[i] += this.vx[i];
+            this.y[i] += this.vy[i];
+        }
+
+        for(let i = 0; i < 512; i++ ){
+
+            //パスの初期化
+            this.myContext.beginPath();
+            //線の始点を決める
+            this.myContext.moveTo(this.x[i], this.y[i]);
+            //線の終点(加速度を足した次の点)を決める
+            this.myContext.lineTo(this.x[i] + this.vx[i], this.y[i] + this.vy[i]);
+
+            this.myContext.strokeStyle = sCL[this.sparkColor[i]];
+
+            //描画
+            this.myContext.stroke();
+            }
+    }
+}
+
+//let example = new Fireworks();
+//console.log(example.x[500]);
+
+var x     = new Array(); // 花火パーティクルのｘ座標
+var y     = new Array(); // 花火パーティクルのｙ座標
+var vx    = new Array(); // 花火パーティクルのｘ方向の速度
+var vy    = new Array(); // 花火パーティクルのｘ方向の速度
+var cx    = 320; // 花火中心点のｘ座標
+var cy    = 240;  // 花火中心点のｙ座標
+
+for( var j = 0; j < 512; j++ ){
+ //4つの配列の全てに512個の要素を持たせる
+ x[j] = cx;
+ y[j] = cy;
+
+ //0~4のランダムな値を作る
+ var speed = 4 * Math.random();
+ //(円周2πr)
+ //適当なラジアン値(弧度法で測る角度の大きさ)を作る(0 ~ 2π(≒6.28))
+ var theta = Math.random() * 2 * Math.PI;
+
+ //余分だと思うメモ
+ //sinθ...左下の正角(θ)に対する弦の長さ(直角三角形の高さ、たかサイン)
+ //cosθ...右上の余角(90-θ)に対する弦の長さ(直角三角形の底辺、よコサイン)
+ //--sin,cos,tanも直角三角形の斜辺を1とした時の値を返す？--
+ //ラジアン値の求め方 ... 弧の長さ/半径(sinθ、cosθの求め方に似てる？)
+
+//Math.cos(rad) 引数のラジアン値をもとにθを求め、cosθを求める？
+//-4~4の値をvx, vyに格納
+ vx[j] = speed * Math.cos( theta );
+ vy[j] = speed * Math.sin( theta );
+}
+console.log(vx[3]);
+
+//この関数の中にcanvas操作、花火クラス生成まとめて書く
+//onloadで上に書きたい
+
+//とりあえず1つだけ花火作る用のフラグ
+let created=false;
+
+//一度に表示する花火の数は10個まで
+let allFireworks = new Array();
+
+function create(){
+    let canvas = document.getElementById( "myCanvas" );
+    let myContext = canvas.getContext( "2d" );
+    myContext.strokeStyle = "#ffffff";
+    time += 1;
+    myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
+    myContext.fillRect( 0, 0, 1024, 768 );
+
+    if(!created){
+        allFireworks[0] = new Fireworks(myContext);
+        created = true;
+    }
+
+    //console.log(allFireworks[0]);
+
+    for(let i=0;i<allFireworks.length;i++) {
+        allFireworks[i].drawOneFrameFireworks();
+    }
+
+    var i;
+
+//3/5 次ここから
+ for( i = 0; i < 256; i++ ){
+  //起点の座標と乱数を足す
+  // . ーーー → (X)
+  // |
+  // |
+  // |
+  // ↓
+  //(Y)
+
+  //足し算で正の方向(画面の下側に)に進んでいく
+  //これがないと下がらずいろんな方向に飛んでいく
+  vy[i] += 0.05;
+
+  //moveTo()で使う始点を格納
+  x[i] += vx[i];
+  y[i] += vy[i];
+ }
+
+ //何だろう?
+ //myContext.strokeWidth = 4;
+
+ for( i = 0; i < 256; i++ ){
+  myContext.beginPath();
+  myContext.moveTo( x[i], y[i] );
+  //加速度を足した次の点
+  myContext.lineTo( x[i] + vx[i], y[i] + vy[i] );
+  myContext.stroke();
+ }
+
+ if(time >= 33) {
+    for( i = 256; i < 512; i++ ){
+  vy[i] += 0.05;
+  x[i] += vx[i];
+  y[i] += vy[i];
+ }
+
+ for( i = 256; i < 512; i++ ){
+  myContext.beginPath();
+  myContext.moveTo( x[i], y[i] );
+  myContext.lineTo( x[i] + vx[i], y[i] + vy[i] );
+  myContext.strokeStyle = "#ffffff";
+  myContext.stroke();
+ }
+
+ }
+ setTimeout( 'create()', 66 );
+}
+//classにまとめよう
+var time = 0;
+</script>
+</head>
+<body onload="create();">
+<canvas id="myCanvas" width="640" height="480">
+このブラウザは canvas 要素に対応していません。
+</canvas>
+</body>
+</html>

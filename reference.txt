@@ -1,0 +1,16 @@
+参考リンク集
+
+cos関数 - Mathクラス - JavaScript入門
+https://www.javadrive.jp/javascript/math_class/index10.html
+
+三角比の正弦余弦正接ってどういう意味？サインコサインタンジェントに簡単に結び付けられる覚え方のコツとは？ | 遊ぶ数学
+https://integraldx.info/sine-cosine-tangent-143#index_id5
+
+サインコサインタンジェント(sin cos tan)とは何を表す？【良い覚え方を紹介】 | 遊ぶ数学
+https://integraldx.info/sin-cos-tan-81
+
+
+ラジアン（弧度法）の意味と「度」への変換方法
+https://sci-pursuit.com/math/radian.html
+
+eof
