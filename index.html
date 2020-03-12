@@ -9,103 +9,149 @@ canvas{
 }
 </style>
 <script>
+//花火をクラス化 => 4色を一気に放射
 
 class Fireworks {
-    constructor() {
-        this.x     = new Array(); // 花火パーティクルのｘ座標
-        this.y     = new Array(); // 花火パーティクルのｙ座標
-        this.vx    = new Array(); // 花火パーティクルのｘ方向の速度
-        this.vy    = new Array(); // 花火パーティクルのｘ方向の速度
-        this.cx    = 320; // 花火中心点のｘ座標
-        this.cy    = 240;  // 花火中心点のｙ座標
-        this.speed = 0;
-        this.theta = 0;
-        this.red   = 0;
+    constructor(myContext) {
+        this.x = new Array(); // 花火パーティクルのｘ座標
+        this.y = new Array(); // 花火パーティクルのｙ座標
+        this.vx = new Array(); // 花火パーティクルのｘ方向の速度
+        this.vy = new Array(); // 花火パーティクルのｘ方向の速度
+        this.cx = Math.floor(Math.random() * 480 + 64); // 花火中心点のｘ座標
+        this.cy = Math.floor(Math.random() * 360 + 32);  // 花火中心点のｙ座標
+
+        //火花の色
+        this.sparkColor = new Array();
+        //色リスト
+        this.sparkColorList = this.setSparkColor();
+
+        //Canvas
+        this.myContext = myContext;
+
+        //二発目を打つ用
+        //this.time = 0;
+        this.setSpark();
     }
 
-    setRandom() {
-        for( var j = 0; j < 512; j++ ){
-            this.x[j] = cx;
-            this.y[j] = cy;
-            this.speed = 4 * Math.random();
-            this.theta = Math.random() * 2 * Math.PI;
-            this.vx[j] = speed * Math.cos( theta );
-            this.vy[j] = speed * Math.sin( theta );
-            this.red = Math.floor( Math.random() * 128 ) + 128;
-        }       
+    setSpark() {
+        for(let i = 0; i < 512; i++ ){
+            //0~4のランダムな値を作る
+            let speed = 4 * Math.random();
+            
+            //(円周2πr)
+            //適当なラジアン値(弧度法で測る角度の大きさ)を作る(0 ~ 2π(≒6.28))
+            let theta = Math.random() * 2 * Math.PI;
+
+            //4つの配列の全てに512個の要素を持たせる
+            this.x[i] = this.cx;
+            this.y[i] = this.cy;
+
+            //Math.cos(rad) 引数のラジアン値をもとにθを求め、cosθを求める？
+            //-4 ~ 4 をvx, vyに格納
+            this.vx[i] = speed * Math.cos( theta );
+            this.vy[i] = speed * Math.sin( theta );
+
+            this.sparkColor[i] = Math.floor(Math.random() * 4);
+
+            //個人的メモ
+            //sinθ...左下の正角(θ)に対する弦の長さ(直角三角形の高さ、たかサイン)
+            //cosθ...右上の余角(90-θ)に対する弦の長さ(直角三角形の底辺、よコサイン)
+            //--sin,cos,tanも直角三角形の斜辺を1とした時の値を返す？--
+            //ラジアン値の求め方 ... 弧の長さ/半径 (sinθ、cosθの求め方に似てる？)
+        }
+        this.drawOneFrameFireworks();
+    }
+
+    
+    setSparkColor() {
+        //rgb値を指定する文字列を4種類格納する配列
+        let colorList = new Array();
+        //色の作成
+        for(let i=0;i<4;i++){
+            colorList[i] = "#";
+            for(let j=0;j<3;j++) {
+                //16進数に変換
+                colorList[i] += Math.floor(Math.random() * 195 + 60).toString(16)
+            }
+            console.log("list%d:%s",i,colorList[i]);
+        }
+        return colorList;
+    }
+
+    drawOneFrameFireworks() {
+
+        //長いので省略
+        let sCL = this.sparkColorList;
+
+        this.myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
+        this.myContext.fillRect( 0, 0, 1024, 768 );
+
+        //起点の座標と乱数を足す
+        for(let i = 0; i < 512; i++ ){
+
+            // . ーーー → (X)
+            // |
+            // |
+            // |
+            // ↓
+            //(Y)
+
+            //足し算で正の方向(画面の下側に)に進んでいく
+            //これがないと下がらずいろんな方向に飛んでいく
+            this.vy[i] += 0.05;
+
+            //moveTo()で使う始点を格納
+            this.x[i] += this.vx[i];
+            this.y[i] += this.vy[i];
+        }
+
+        for(let i = 0; i < 512; i++ ){
+
+            //パスの初期化
+            this.myContext.beginPath();
+            //線の始点を決める
+            this.myContext.moveTo(this.x[i], this.y[i]);
+            //線の終点(加速度を足した次の点)を決める
+            this.myContext.lineTo(this.x[i] + this.vx[i], this.y[i] + this.vy[i]);
+
+            this.myContext.strokeStyle = sCL[this.sparkColor[i]];
+
+            //描画
+            this.myContext.stroke();
+            }
     }
 }
 
-var x     = new Array(); // 花火パーティクルのｘ座標
-var y     = new Array(); // 花火パーティクルのｙ座標
-var vx    = new Array(); // 花火パーティクルのｘ方向の速度
-var vy    = new Array(); // 花火パーティクルのｘ方向の速度
-var cx    = 320; // 花火中心点のｘ座標
-var cy    = 240;  // 花火中心点のｙ座標
+//一度に表示する花火の数は5個まで
+let allFireworks = new Array();
+//実行時間600秒ごとに打ち上げる
+let executionTime =  -600;
 
-for( var j = 0; j < 512; j++ ){
- x[j] = cx;
- y[j] = cy;
- var speed = 4 * Math.random();
- var theta = Math.random() * 2 * Math.PI;
- vx[j] = speed * Math.cos( theta );
- vy[j] = speed * Math.sin( theta );
- var red   = Math.floor( Math.random() * 128 ) + 128;
+//メインの関数、アニメーションさせるため再帰
+function create(){
+    let canvas = document.getElementById( "myCanvas" );
+    let myContext = canvas.getContext( "2d" );
+    myContext.strokeStyle = "#ffffff";
+    myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
+    myContext.fillRect( 0, 0, 1024, 768 );
+
+    //前回の花火を打ち上げたタイミングから600秒経過してるか判定
+    if(allFireworks.length < 5 && (performance.now()-executionTime) >= 600){
+        allFireworks[allFireworks.length] = new Fireworks(myContext);
+        executionTime = performance.now();
+    }
+
+    //各火花の位置を描画
+    for(let i=0;i<allFireworks.length;i++) {
+        allFireworks[i].drawOneFrameFireworks();
+    }
+
+    //再帰
+    setTimeout( 'create()', 55 );
 }
-
-
-
-function drawScreen(){
-    time += 1;
- var canvas = document.getElementById( "myCanvas" );
- var myContext = canvas.getContext( "2d" );
-
- var i;
-
- for( i = 0; i < 256; i++ ){
-  vy[i] += 0.05;
-  x[i] += vx[i];
-  y[i] += vy[i];
- }
-
- myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
- myContext.fillRect( 0, 0, 1024, 768 );
-
- myContext.strokeWidth = 4;
- for( i = 0; i < 256; i++ ){
-  myContext.beginPath();
-  myContext.moveTo( x[i], y[i] );
-  myContext.lineTo( x[i] + vx[i], y[i] + vy[i] );
-  myContext.strokeStyle = "#ffffff";
-  myContext.stroke();
- }
-
- if(time >= 33) {
-    for( i = 256; i < 512; i++ ){
-  vy[i] += 0.05;
-  x[i] += vx[i];
-  y[i] += vy[i];
- }
-
- myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
- myContext.fillRect( 0, 0, 1024, 768 );
-
- myContext.strokeWidth = 4;
- for( i = 256; i < 512; i++ ){
-  myContext.beginPath();
-  myContext.moveTo( x[i], y[i] );
-  myContext.lineTo( x[i] + vx[i], y[i] + vy[i] );
-  myContext.strokeStyle = "#ffffff";
-  myContext.stroke();
- }
-
- }
- setTimeout( 'drawScreen()', 66 );
-}
-var time = 0;
 </script>
 </head>
-<body onload="drawScreen();">
+<body onload="create();">
 <canvas id="myCanvas" width="640" height="480">
 このブラウザは canvas 要素に対応していません。
 </canvas>

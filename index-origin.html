@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>打ち上げ花火</title>
+<style>
+canvas{
+ background-color: #000000;
+}
+</style>
+<script>
+
+class Fireworks {
+    constructor() {
+        this.x     = new Array(); // 花火パーティクルのｘ座標
+        this.y     = new Array(); // 花火パーティクルのｙ座標
+        this.vx    = new Array(); // 花火パーティクルのｘ方向の速度
+        this.vy    = new Array(); // 花火パーティクルのｘ方向の速度
+        this.cx    = 320; // 花火中心点のｘ座標
+        this.cy    = 240;  // 花火中心点のｙ座標
+        this.speed = 0;
+        this.theta = 0;
+        this.red   = 0;
+    }
+
+    setRandom() {
+        for( var j = 0; j < 512; j++ ){
+            this.x[j] = cx;
+            this.y[j] = cy;
+            this.speed = 4 * Math.random();
+            this.theta = Math.random() * 2 * Math.PI;
+            this.vx[j] = speed * Math.cos( theta );
+            this.vy[j] = speed * Math.sin( theta );
+            this.red = Math.floor( Math.random() * 128 ) + 128;
+        }       
+    }
+}
+
+var x     = new Array(); // 花火パーティクルのｘ座標
+var y     = new Array(); // 花火パーティクルのｙ座標
+var vx    = new Array(); // 花火パーティクルのｘ方向の速度
+var vy    = new Array(); // 花火パーティクルのｘ方向の速度
+var cx    = 320; // 花火中心点のｘ座標
+var cy    = 240;  // 花火中心点のｙ座標
+
+for( var j = 0; j < 512; j++ ){
+ x[j] = cx;
+ y[j] = cy;
+ var speed = 4 * Math.random();
+ var theta = Math.random() * 2 * Math.PI;
+ vx[j] = speed * Math.cos( theta );
+ vy[j] = speed * Math.sin( theta );
+ var red   = Math.floor( Math.random() * 128 ) + 128;
+}
+
+
+
+function drawScreen(){
+    time += 1;
+ var canvas = document.getElementById( "myCanvas" );
+ var myContext = canvas.getContext( "2d" );
+
+ var i;
+
+ for( i = 0; i < 256; i++ ){
+  vy[i] += 0.05;
+  x[i] += vx[i];
+  y[i] += vy[i];
+ }
+
+ myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
+ myContext.fillRect( 0, 0, 1024, 768 );
+
+ myContext.strokeWidth = 4;
+ for( i = 0; i < 256; i++ ){
+  myContext.beginPath();
+  myContext.moveTo( x[i], y[i] );
+  myContext.lineTo( x[i] + vx[i], y[i] + vy[i] );
+  myContext.strokeStyle = "#ffffff";
+  myContext.stroke();
+ }
+
+ if(time >= 33) {
+    for( i = 256; i < 512; i++ ){
+  vy[i] += 0.05;
+  x[i] += vx[i];
+  y[i] += vy[i];
+ }
+
+ myContext.fillStyle = 'rgba( 0, 0, 0, 0.05 )';
+ myContext.fillRect( 0, 0, 1024, 768 );
+
+ myContext.strokeWidth = 4;
+ for( i = 256; i < 512; i++ ){
+  myContext.beginPath();
+  myContext.moveTo( x[i], y[i] );
+  myContext.lineTo( x[i] + vx[i], y[i] + vy[i] );
+  myContext.strokeStyle = "#ffffff";
+  myContext.stroke();
+ }
+
+ }
+ setTimeout( 'drawScreen()', 66 );
+}
+var time = 0;
+</script>
+</head>
+<body onload="drawScreen();">
+<canvas id="myCanvas" width="640" height="480">
+このブラウザは canvas 要素に対応していません。
+</canvas>
+</body>
+</html>
